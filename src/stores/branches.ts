@@ -49,11 +49,13 @@ export const useBranchStore = defineStore('branch', {
     async updateReservationSettings(branchId: string, payload: Partial<Branch>) {
       try {
         this.loading = true;
+        this.loadingMessage = 'Updating reservation settings...';
         await updateBranch(branchId, payload);
         await this.loadBranches();
         this.loading = false;
       } catch (err: any) {
         this.loading = false;
+        this.loadingMessage = null;
         this.error = err.response.data.message || err.message || 'Failed to update reservation settings';
       }
     },
