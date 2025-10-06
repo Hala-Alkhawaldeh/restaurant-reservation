@@ -1,24 +1,25 @@
 <template>
   <LoadingSpinner v-if="store.loading" :message="store.loadingMessage" />
-  <div class="">
-    <div class="banner">
+  <main>
+    <section class="banner relative">
       <img
         alt=""
         src="https://images.unsplash.com/photo-1599458252573-56ae36120de1?ixlib=rb-4.0.3&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=3600"
         referrerpolicy="same-origin"
         class="object-cover rounded-none w-full h-[128vh] max-h-[300px] opacity-100 object-[center_69.54%]"
       />
-    </div>
-    <div class="p-4">
+    </section>
+    <!-- Main Content -->
+    <section class="p-4">
       <h1 class="text-2xl font-bold mb-4">Reservation</h1>
 
       <!-- Top actions -->
       <div class="flex justify-between mb-4">
         <button
           @click="openAddModal = true"
-          class="px-4 py-2 border  border-primary text-primary rounded hover:bg-primary hover:text-white md:text-base text-sm"
+          class="px-4 py-2 border border-primary text-primary rounded hover:bg-primary hover:text-white md:text-base text-sm"
         >
-         + Add Branches
+          + Add Branches
         </button>
 
         <button
@@ -37,8 +38,8 @@
         @close="openAddModal = false"
         @added="loadBranches"
       />
-    </div>
-  </div>
+    </section>
+  </main>
 </template>
 
 <script setup>
@@ -48,22 +49,23 @@ import BranchsList from "../components/branches/BranchsList.vue";
 import AddBranchModal from "../components/branches/AddBranchModal.vue";
 import LoadingSpinner from "../components/common/LoadingSpinner.vue";
 import { onMounted } from "vue";
-import { useRoute, useRouter } from 'vue-router';
-import { useHead } from '@vueuse/head';
+import { useRoute, useRouter } from "vue-router";
+import { useHead } from "@vueuse/head";
 
 useHead({
   title: "Restaurant Reservation Management",
   meta: [
     {
-      name: 'description',
-      content: 'Manage your restaurant reservations efficiently with our reservation management system.',
+      name: "description",
+      content:
+        "Manage your restaurant reservations efficiently with our reservation management system.",
     },
     {
-      name: 'keywords',
-      content: 'reservation, management, restaurant, bookings, tables',
+      name: "keywords",
+      content: "reservation, management, restaurant, bookings, tables",
     },
   ],
-})
+});
 
 const store = useBranchStore();
 const route = useRoute();
@@ -71,7 +73,6 @@ const router = useRouter();
 const currentPage = ref(Number(route.query.page) || 1);
 const openAddModal = ref(false);
 const branchs_table = ref(null);
-
 
 const disableAll = async () => {
   store.loadingMessage = "Disabling all reservations...";
@@ -89,10 +90,7 @@ const disableAll = async () => {
   }
 };
 
-
 onMounted(() => {
   router.replace({ query: { ...route.query, page: currentPage.value } });
 });
-
-
 </script>
