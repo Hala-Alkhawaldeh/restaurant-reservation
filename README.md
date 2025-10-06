@@ -76,10 +76,19 @@ TypeScript cannot handle `.vue` imports by default.
 - Make sure Volar is installed in your editor for full language support.
 
 ## Project Setup
+## 🧩 Node.js Version
+```sh
+nvm use 20
+```
 
+## node Modules 
 ```sh
 npm install
 ```
+## 🔧 Environment Setup
+1. Create a `.env` file in the project root.
+2. Copy the variables from `.env.example` and update with your actual API keys.
+
 
 ### Compile and Hot-Reload for Development
 

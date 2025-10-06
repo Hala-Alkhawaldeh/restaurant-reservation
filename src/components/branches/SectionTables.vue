@@ -17,7 +17,6 @@
         <div
           v-for="table in section.tables"
           :key="table.id"
-          @click="$emit('toggle', table.id)"
           :class="[
             'px-4 py-2 cursor-pointer text-sm border rounded-full transition-all duration-200 shadow-sm select-none',
             selected.includes(table.id)
