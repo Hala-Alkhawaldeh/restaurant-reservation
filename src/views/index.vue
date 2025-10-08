@@ -78,13 +78,13 @@ const disableAll = async () => {
   store.loadingMessage = "Disabling all reservations...";
   store.loading = true;
   try {
-    for (const branch of store.branches) {
+    for (const branch of store.open_reservations_branches) {
       await store.disableReservation(branch.id);
     }
   } catch (err) {
     console.error(err);
   } finally {
-    await store.loadBranches(currentPage.value);
+    await store.loadBranches(store.meta.current_page, store.meta.per_page);
     store.loading = false;
     store.loadingMessage = "";
   }

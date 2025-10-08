@@ -47,14 +47,21 @@ const selectedIds = ref<string[]>([]);
 const disabledBranches = computed(() =>
   store.branches.filter((b) => !b.accepts_reservations)
 );
+const pagination = {
+  page: store.meta.current_page,
+  per_page: store.meta.per_page,
+};
+
 
 const enableBranches = async () => {
   store.loadingMessage = "Adding branchs ...";
   for (const id of selectedIds.value) {
     await store.enableReservation(id);
   }
+  await store.loadBranches(pagination.page , pagination.per_page);
   emit("added");
   emit("close");
+
   store.loadingMessage = "";
   store.loading = false;
 };

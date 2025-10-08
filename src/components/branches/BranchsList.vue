@@ -1,5 +1,15 @@
 <template>
   <section id="reservations_table" class="w-full overflow-auto">
+    <!-- Filter Input -->
+    <input
+      v-model="filters.name"
+      type="text"
+      placeholder="Search branch..."
+      class="border rounded px-3 py-2 w-64 my-2"
+      @input="onSearch"
+    />
+  
+
     <table class="w-full border-collapse">
       <thead>
         <tr class="bg-gray-200">
@@ -10,9 +20,7 @@
           >
             {{ col.label }}
           </th>
-          <th
-            class="p-2 border bg-primary text-white text-start md:text-base text-sm"
-          >
+          <th class="p-2 border bg-primary text-white text-start md:text-base text-sm">
             Actions
           </th>
         </tr>
@@ -46,17 +54,14 @@
               tooltip="Disable Branch"
               @click="disable(branch.id)"
             >
-              <img
-                src="@/assets/icons/delete.svg"
-                alt="Delete"
-                class="w-6 h-6"
-              />
+              <img src="@/assets/icons/delete.svg" alt="Delete" class="w-6 h-6" />
             </action-buttons>
           </td>
         </tr>
       </tbody>
     </table>
   </section>
+
   <!-- Pagination -->
   <div class="flex mt-4 space-x-2 items-center justify-center">
     <button
@@ -66,9 +71,9 @@
     >
       Prev
     </button>
-    <span class="px-3 py-1 border rounded text-primary"
-      >Page {{ currentPage }}</span
-    >
+    <span class="px-3 py-1 border rounded text-primary">
+      Page {{ currentPage }}
+    </span>
     <button
       @click="nextPage"
       :disabled="!nextLink || loading"
@@ -85,24 +90,29 @@
     />
   </div>
 </template>
-
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useBranchStore } from "../../stores/branches";
 import ReservationSettingsForm from "./ReservationSettingsForm.vue";
 import ActionButtons from "../common/ActionButtons.vue";
 import { useRoute, useRouter } from 'vue-router';
 
-
 const route = useRoute();
 const router = useRouter();
 const store = useBranchStore();
+
 const selectedBranch = ref(null);
 const loading = ref(false);
+const searchQuery = ref('');
 const currentPage = ref(Number(route.query.page) || 1);
 const nextLink = ref(null);
 const prevLink = ref(null);
 
+const filters = ref({
+  name: '',
+  reference: '',
+  tablesCount: null,
+});
 
 const columns = [
   { key: "name", label: "Branch" },
@@ -111,10 +121,8 @@ const columns = [
   { key: "reservation_duration", label: "Reservation Duration" },
 ];
 
-
 const branches = computed(() =>
-  store.branches
-    .filter((branch) => branch.accepts_reservations) // keep only branches that accept reservations
+  store.open_reservations_branches
     .map((branch) => ({
       ...branch,
       tablesCount: branch.sections
@@ -125,15 +133,16 @@ const branches = computed(() =>
 
 const resolveValue = (obj, key) => obj[key] ?? "";
 
-
-const loadBranches = async (page =currentPage.value) => {
+const loadBranches = async (page = currentPage.value) => {
   store.loading = true;
-  const res = await store.loadBranches(page);
+  const res = await store.loadBranches(page, 50, searchQuery.value);
   currentPage.value = res?.meta?.current_page ?? 1;
   nextLink.value = res?.links?.next ?? null;
   prevLink.value = res?.links?.prev ?? null;
   store.loading = false;
 };
+
+
 
 const editBranch = (branch) => {
   selectedBranch.value = JSON.parse(JSON.stringify(branch));
@@ -147,18 +156,24 @@ const disable = async (id) => {
   store.loading = false;
 };
 
-
 const nextPage = () => {
   if (nextLink.value) {
-     loadBranches(currentPage.value + 1);
-     router.replace({ query: { ...route.query, page: currentPage.value + 1 } });
+      loadBranches(currentPage.value + 1);
+      router.replace({ query: { ...route.query, page: currentPage.value + 1 } });
   }
-
 };
 const prevPage = () => {
-  if (prevLink.value) {loadBranches(currentPage.value - 1);
+  if (prevLink.value) {
+    loadBranches(currentPage.value - 1);
     router.replace({ query: { ...route.query, page: currentPage.value - 1 } });
   }
+};
+
+
+const onSearch = async () => {
+  store.setFilters(filters);
+  await store.loadBranches(store.meta.current_page, store.meta.per_page);
+  store.loading = false;
 };
 
 onMounted(() => loadBranches());

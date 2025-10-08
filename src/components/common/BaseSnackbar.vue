@@ -13,21 +13,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
-import { useSnackbar } from "@/composables/useSnackbar"
+import { computed } from "vue";
+import { useSnackbar } from "@/composables/useSnackbar";
 
-const { visible, message, color } = useSnackbar()
+const { visible, message, color } = useSnackbar();
 
 const colorClass = computed(() => {
   switch (color.value) {
     case "error":
-      return "bg-red-600"
+      return "bg-red-600";
     case "warning":
-      return "bg-yellow-600"
+      return "bg-yellow-600";
     case "info":
-      return "bg-blue-600"
+      return "bg-blue-600";
     default:
-      return "bg-green-600"
+      return "bg-green-600";
   }
 })
 </script>

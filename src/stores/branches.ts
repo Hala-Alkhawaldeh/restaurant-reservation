@@ -1,63 +1,82 @@
 import { defineStore } from 'pinia';
-import { fetchBranches, updateBranch } from '../services/branchesService';
 import type { Branch } from '../types/branch';
+import { fetchBranches, updateBranch } from '@/services/branchesService';
+import { useSnackbar } from '@/composables/useSnackbar';
 
 export const useBranchStore = defineStore('branch', {
   state: () => ({
     branches: [] as Branch[],
+    open_reservations_branches: [] as Branch[],
     loading: false,
-    loadingMessage: 'Loading branches...' as string | null,
     error: null as string | null,
+    loadingMessage: 'Loading branches...',
+    meta: null as any,
+    links: null as any,
+    filters: {} as Record<string, any>,
   }),
   actions: {
-    async loadBranches(page = 1, perPage = 50) {
-      this.error = null
-      try {
-        const res = await fetchBranches(page, perPage)
-        this.branches = res.data
-        return {
-          meta: res.meta,
-          links: res.links
-        }
-      } catch (err: any) {
-        this.error = err.message || 'Failed to fetch branches'
-        return {
-          meta: null,
-          links: null
-        }
-      }
-    },
-    async enableReservation(branchId: string) {
+    async loadBranches(page = 1, perPage = 50, filters = this.filters) {
+      const { showError } = useSnackbar();
       this.loading = true;
-      try {
-        await updateBranch(branchId, { accepts_reservations: true });
-        await this.loadBranches();
-      } catch (err: any) {
-        this.error = err.message || 'Failed to enable reservation';
+      this.error = null;
+      
+
+      const data = await fetchBranches(page, perPage ,  filters);
+      if (data) {
+        this.branches = data.data;
+        this.open_reservations_branches = this.branches.filter(branch => branch.accepts_reservations);
+        this.meta = data.meta;
+        this.links = data.links;
+        return {
+          branches: this.branches,
+          meta: this.meta,
+          links: this.links,
+        }
+      } else {
+        this.error = 'Failed to fetch branches';
+        showError(this.error);
+      }
+
+      this.loading = false;
+    },
+
+    async enableReservation(branchId: string) {
+      const { showSuccess, showError } = useSnackbar();
+
+      const data = await updateBranch(branchId, { accepts_reservations: true });
+      if (data) {
+        showSuccess('Reservation enabled successfully!');
+        // await this.loadBranches();
+      } else {
+        showError('Failed to enable reservation');
       }
     },
 
     async disableReservation(branchId: string) {
-      try {
-        await updateBranch(branchId, { accepts_reservations: false });
+      const { showSuccess, showError } = useSnackbar();
+
+      const data = await updateBranch(branchId, { accepts_reservations: false });
+      if (data) {
+        showSuccess('Reservation disabled successfully!');
         // await this.loadBranches();
-      } catch (err: any) {
-        this.error =  err.response.data.message || err.message || 'Failed to disable reservation';
+      } else {
+        showError('Failed to disable reservation');
       }
     },
 
     async updateReservationSettings(branchId: string, payload: Partial<Branch>) {
-      try {
-        this.loading = true;
-        this.loadingMessage = 'Updating reservation settings...';
-        await updateBranch(branchId, payload);
+      const { showSuccess, showError } = useSnackbar();
+
+      const data = await updateBranch(branchId, payload);
+      if (data) {
+        showSuccess('Reservation settings updated successfully!');
         await this.loadBranches();
-        this.loading = false;
-      } catch (err: any) {
-        this.loading = false;
-        this.loadingMessage = null;
-        this.error = err.response.data.message || err.message || 'Failed to update reservation settings';
+      } else {
+        showError('Failed to update reservation settings');
       }
+    },
+    setFilters(filters: Record<string, any>) {
+      this.filters = filters;
     },
   },
 });
