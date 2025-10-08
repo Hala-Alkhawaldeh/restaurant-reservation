@@ -135,6 +135,7 @@ const formData = ref({
 onMounted(() => {
   initTables();
   initReservationTimes();
+  validateReservation();
 });
 
 const initTables = () => {
@@ -162,6 +163,10 @@ const initReservationTimes = () => {
       }
     }
   }
+};
+
+const validateReservation = () => {
+  timeSlotInputRef.value.forEach((ref) => ref.validateAll());
 };
 
 const handleSelectTable = (id) => {
@@ -227,7 +232,6 @@ const save = async () => {
   //   alert("Please select a table.");
   //   return;
   // }
-
   if (!isValid.value) {
     return;
   }
